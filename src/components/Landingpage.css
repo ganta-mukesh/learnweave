@@ -1,0 +1,88 @@
+.landing-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Arial', sans-serif; /* Use a professional font */
+    transition: opacity 1s ease-in-out; /* Fade-out transition */
+}
+
+.background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('lb.avif'); /* Replace with your image URL */
+    background-size: cover; /* Ensures the image covers the entire area */
+    background-position: center; /* Centers the image */
+    z-index: 1;
+    animation: fadeIn 1.5s ease-in-out; /* Animation for background */
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Blackish overlay with 50% opacity */
+    z-index: 2; /* Ensure overlay is above the background image */
+}
+
+.title {
+    position: relative;
+    color: whitesmoke;
+    font-family: "Nosifer", serif;
+    font-size: 4rem; /* Increase font size for title */
+    z-index: 3; /* Ensure text is above the overlay */
+    animation: slideIn 1s ease-in-out; /* Animation for title */
+}
+
+.caption {
+    position: relative;
+    color: whitesmoke;
+    font-size: 1.5rem; /* Increase font size for caption */
+    z-index: 3; /* Ensure text is above the overlay */
+    animation: slideIn 1s ease-in-out 0.5s; /* Animation for caption with delay */
+}
+
+.get-started-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    z-index: 3; /* Ensure button is above the overlay */
+}
+
+.get-started-button:hover {
+    background-color: #0056b3;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px); /* Slide in from above */
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

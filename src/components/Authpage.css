@@ -1,0 +1,163 @@
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-image: url('coding2.jpg');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1;
+}
+
+.auth-card {
+    position: relative;
+    display: flex;
+    width: 70%;
+    height: 70%;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    z-index: 2;
+    overflow: hidden;
+}
+
+.auth-message {
+    width: 50%;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 40px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.auth-message .auth-image {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    object-fit: cover;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+}
+
+.auth-message h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.auth-message p {
+    font-size: 1rem;
+    margin-top: 10px;
+}
+
+.auth-toggle {
+    color: #007bff;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    display: block;
+    text-align: center;
+}
+
+.auth-toggle:hover {
+    text-decoration: underline;
+}
+.auth-form {
+    width: 50%;
+    padding: 40px 30px;
+}
+
+.auth-input {
+    margin: 10px 0;
+    padding: 15px;
+    width: calc(100% - 40px); /* Adjusted for eye button width */
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+.auth-button {
+    margin: 0 10px; /* Add 10px spacing between the buttons */
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 10px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.auth-button:hover {
+    background-color: #0056b3;
+}
+
+.otp-container {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0;
+}
+
+.otp-input {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 1.2rem;
+}
+
+.password-container {
+    position: relative;
+}
+
+.eye-button {
+    position: absolute;
+    top: 50%;
+    right: 10px; /* Adjust this value to position the button */
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #888;
+    transition: color 0.3s ease;
+}
+
+.eye-button:hover {
+    color: #555;
+}
+
+.auth-input::placeholder {
+    color: #aaa;
+}
+
+.auth-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.error-message {
+    color: red;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.success-message {
+    color: green;
+    font-weight: bold;
+    margin: 10px 0;
+}

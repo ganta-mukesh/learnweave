@@ -1,0 +1,90 @@
+.notifications-container {
+    width: 100vw; /* Full viewport width */
+    height: 100vh; /* Full viewport height */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center content horizontally */
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto; /* Enable vertical scrolling */
+    scrollbar-width: thin;
+    scrollbar-color: #ff4b5c #ffffff;
+    position: relative; /* Ensure it stays in the document flow */
+    margin: 0; /* Remove any default margin */
+    top: 0; /* Reset top positioning */
+    left: 0; /* Reset left positioning */
+    transform: none; /* Remove any transform */
+}
+
+.notifications-title {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #0a0202;
+}
+
+.notifications-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 80%;
+    padding: 20px;
+}
+
+.notification-card {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-size: 18px;
+    color: #000000;
+    transition: transform 0.3s ease-in-out;
+    width: 100%;
+}
+
+.notification-card.unseen {
+    border-left: 5px solid red;
+}
+
+.notification-card:hover {
+    transform: scale(1.02);
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.no-notifications {
+    font-size: 18px;
+    color: #080707;
+}
+
+.mark-seen-button {
+    margin-top: 20px;
+    padding: 15px 30px;
+    background: #ff4b5c;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
+
+.mark-seen-button:hover {
+    background: #ff2a3d;
+}
+
+.notification-time {
+    display: block;
+    color: #666;
+    font-size: 0.8em;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.unseen {
+    border-left: 4px solid #ff4b5c;
+    background-color: rgba(255, 75, 92, 0.05);
+}

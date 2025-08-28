@@ -1,0 +1,25 @@
+{
+	"folders": [
+		{
+			"path": "../../../LW"
+		},
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../api test"
+		},
+		{
+			"path": "../../../images"
+		},
+		{
+			"path": "../../../spree2k25"
+		},
+		{
+			"path": "../../../innovista"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "spree2k25"
+	}
+}

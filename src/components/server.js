@@ -20,20 +20,37 @@ const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
 const ONECOMPILER_URL = "https://onecompiler-apis.p.rapidapi.com/api/v1/run";
 const MONGO_COMPILER_URI = process.env.MONGO_COMPILER_URI;
 
-
+const GEMINI_ENDPOINT =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+const GEMINI_API_KEY = "AIzaSyC2Psvxy3aRne0-berI59WXCCPaKRW_5-g";
 
 const languageMap = {
-  javascript: "javascript",
-  python: "python",
+    java: "java",
+  cpp: "cpp",          // ✅ use "cpp" only
   c: "c",
-  cpp: "cpp",
-  java: "java",
-  sql: "sql",
-  mongodb: "mongodb"
+  python: "python",    // ✅ use "python" not "py"
+  javascript: "javascript", // or "nodejs"
+  typescript: "typescript",
+  go: "go",
+  ruby: "ruby",
+  php: "php"
 };
+
+const compilerMap = {
+    java: { lang: "java", ext: "java" },
+    cpp: { lang: "cpp", ext: "cpp" },  // use cpp17 or cpp14
+    c: { lang: "c", ext: "c" },
+    python: { lang: "python", ext: "py" },
+    javascript: { lang: "nodejs", ext: "js" },
+    typescript: { lang: "typescript", ext: "ts" },
+    go: { lang: "go", ext: "go" },
+    ruby: { lang: "ruby", ext: "rb" },
+    php: { lang: "php", ext: "php" },
+};
+
   
 // Middleware
-app.use(cors({ origin: 'https://learnweave.netlify.app/', credentials: true }));
+app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(bodyParser.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -76,6 +93,7 @@ async function main() {
         const challengesCollection = db.collection("challenges");
         const notificationsCollection = db.collection("notifications");
         const solutionsCollection = db.collection("solutions");
+        const attemptsCollection = db.collection("attempts");
         let savedOTPs = {};
 
         const transporter = nodemailer.createTransport({
@@ -97,43 +115,8 @@ async function main() {
         }
         
 
-        async function validateChallenge(question, topic, language) {
-            try {
-                const response = await fetch('https://copilot5.p.rapidapi.com/copilot', {
-                    method: 'POST',
-                    headers: {
-                        'x-rapidapi-key': process.env.OPENAI_API_KEY,
-                        'x-rapidapi-host': 'copilot5.p.rapidapi.com',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: `Is the following challenge related to coding? Analyze the topic (${topic}), language (${language}), and question (${question}). Respond with exactly "Yes" or "No".`,
-                        conversation_id: null,
-                        markdown: true
-                    })
-                });
-        
-                if (!response.ok) {
-                    throw new Error(`API request failed with status ${response.status}`);
-                }
-        
-                const result = await response.json();
-                console.log('API Response:', result); // For debugging
-                
-                // Extract the answer from the correct path in the response
-                const answer = result.data?.message?.toLowerCase().trim();
-                
-                if (!answer) {
-                    console.error('No valid answer found in API response');
-                    return false;
-                }
-                
-                return answer === 'yes';
-            } catch (error) {
-                console.error('Error validating challenge:', error);
-                return false; // Default to false if validation fails
-            }
-        }
+      
+
 
 
         app.post('/sendotp', async (req, res) => {
@@ -365,78 +348,144 @@ async function main() {
                 res.status(500).json({ message: "Internal server error" });
             }
         });
+        // Add this endpoint to check admin status
 
-        app.post('/submit-challenge', async (req, res) => {
-            const token = req.headers.authorization?.split(' ')[1];
-            if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+      app.get('/check-admin', async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ isAdmin: false });
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const user = await usersCollection.findOne({ email: decoded.email });
         
-            try {
-                const decoded = jwt.verify(token, JWT_SECRET);
-                const { language, difficulty: rawDifficulty, topic, question, testCases, steps, answer } = req.body;
+        if (!user) return res.status(404).json({ isAdmin: false });
         
-                // Standardize difficulty format
-                const difficulty = rawDifficulty.charAt(0).toUpperCase() + rawDifficulty.slice(1).toLowerCase();
+        // Check if user is admin (learnweave.org@gmail.com)
+        const isAdmin = user.email.toLowerCase() === 'learnweave.org@gmail.com';
+        res.json({ isAdmin });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ isAdmin: false });
+    }
+});
+
+// Update the submit-challenge endpoint with proper challenge type handling
+// Update the submit-challenge endpoint with proper challenge type handling
+// Update the submit-challenge endpoint with proper challenge type handling
+app.post('/submit-challenge', async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
         
-                if (!language || !difficulty || !topic || !question || !testCases || !steps) {
-                    return res.status(400).json({ message: "All fields except answer are required" });
-                }
+        // DEBUG: Log the entire request body
+        console.log('Received request body:', JSON.stringify(req.body, null, 2));
         
-                // Validate the challenge
-                const isValidChallenge = await validateChallenge(question, topic, language);
-                if (!isValidChallenge) {
-                    return res.status(400).json({ message: "This is not a valid coding challenge. Please submit a coding-related question." });
-                }
+        // Extract ALL fields from request body including challengeType
+        const { 
+            language, 
+            difficulty: rawDifficulty, 
+            topic, 
+            question, 
+            testCases, 
+            steps, 
+            answer, 
+            challengeType = 'normal' // Default to 'normal' if not provided
+        } = req.body;
+
+        console.log('Extracted challengeType:', challengeType);
+
+        // Standardize difficulty format
+        const difficulty = rawDifficulty ? rawDifficulty.charAt(0).toUpperCase() + rawDifficulty.slice(1).toLowerCase() : '';
+
+        if (!language || !difficulty || !topic || !question || !testCases || !steps) {
+            return res.status(400).json({ message: "All fields except answer are required" });
+        }
+
+       
+
+        // Find the user
+        const user = await usersCollection.findOne({ email: decoded.email });
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        // Check if user is admin and determine challenge type
+        const isAdmin = user.email.toLowerCase() === 'learnweave.org@gmail.com';
+        let finalChallengeType = 'normal'; // Default to normal
         
-                // Find the user
-                const user = await usersCollection.findOne({ email: decoded.email });
-                if (!user) return res.status(404).json({ message: "User not found" });
+        // Only allow admin to set challenge type
+        if (isAdmin && challengeType) {
+            finalChallengeType = challengeType;
+            console.log('Admin setting challenge type to:', finalChallengeType);
+        } else if (challengeType && challengeType !== 'normal') {
+            console.log('Non-admin user tried to set challenge type to:', challengeType);
+        }
         
-                // Calculate supercoins based on difficulty
-                let supercoins = 0;
-                if (difficulty === 'Basic') supercoins = 3;
-                else if (difficulty === 'Intermediate') supercoins = 5;
-                else if (difficulty === 'Advanced') supercoins = 7;
+        console.log('Final challenge type to be stored:', finalChallengeType);
+
+        // Calculate supercoins based on difficulty
+        let supercoins = 0;
+        if (difficulty === 'Basic') supercoins = 3;
+        else if (difficulty === 'Intermediate') supercoins = 5;
+        else if (difficulty === 'Advanced') supercoins = 7;
+
+        // Create the challenge with challengeType
+        const challenge = {
+            userId: user._id,
+            language,
+            difficulty,
+            topic,
+            question,
+            testCases,
+            steps,
+            answer: answer || null,
+            supercoins,
+            challengeType: finalChallengeType, // This should now be stored
+            createdAt: new Date(),
+        };
+
+        console.log('Full challenge object to be stored:', JSON.stringify(challenge, null, 2));
+
+        // Insert the challenge into the challenges collection
+        const result = await challengesCollection.insertOne(challenge);
         
-                // Create the challenge
-                const challenge = {
-                    userId: user._id,
-                    language,
-                    difficulty,
-                    topic,
-                    question,
-                    testCases,
-                    steps,
-                    answer: answer || null,
-                    supercoins, // Supercoins assigned to the challenge
-                    createdAt: new Date(),
-                };
+        // Verify the challenge was stored with the correct type
+        const insertedChallenge = await challengesCollection.findOne({ _id: result.insertedId });
+        console.log('Stored challenge type:', insertedChallenge?.challengeType);
         
-                // Insert the challenge into the challenges collection
-                const result = await challengesCollection.insertOne(challenge);
-        
-                // Add supercoins to the user's profile when the challenge is created
-                await usersCollection.updateOne(
-                    { _id: user._id },
-                    { $inc: { supercoins: supercoins } } // Increment the user's supercoins
-                );
-        
-                // Create a notification
-                const notificationMessage = `${user.fullName} has submitted a new challenge in ${language} (${difficulty} level).`;
-                await notificationsCollection.insertOne({
-                    message: notificationMessage,
-                    seenBy: [], // Initially, no one has seen this notification
-                    createdBy: user.email, // Add the email of the user who created the notification
-                    createdAt: new Date(),
-                });
-        
-                res.status(201).json({ message: "Challenge submitted successfully", challengeId: result.insertedId });
-            } catch (err) {
-                console.error(err);
-                res.status(500).json({ message: "Internal server error" });
-            }
+        // Double-check by querying the database directly
+        const dbCheck = await challengesCollection.findOne({ _id: result.insertedId }, { projection: { challengeType: 1 } });
+        console.log('Database verification - challengeType:', dbCheck?.challengeType);
+
+        // Add supercoins to the user's profile when the challenge is created
+        await usersCollection.updateOne(
+            { _id: user._id },
+            { $inc: { supercoins: supercoins } }
+        );
+
+        // Create a notification
+        const notificationMessage = `${user.fullName} has submitted a new ${finalChallengeType} challenge in ${language} (${difficulty} level).`;
+        await notificationsCollection.insertOne({
+            message: notificationMessage,
+            seenBy: [],
+            createdBy: user.email,
+            createdAt: new Date(),
+            challengeId: result.insertedId.toString(),
+            type: 'challenge_submission',
+            relatedUser: user._id
         });
 
-
+        res.status(201).json({ 
+            message: "Challenge submitted successfully", 
+            challengeId: result.insertedId,
+            challengeType: finalChallengeType // Return the challenge type in response
+        });
+    } catch (err) {
+        console.error('Error in submit-challenge:', err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
        // Notifications Backend code
        /*app.get('/notifications', async (req, res) => {
         const token = req.headers.authorization?.split(' ')[1];
@@ -496,49 +545,40 @@ app.post('/notifications/mark-seen', async (req, res) => {
 });
 
 
+// This backend code is correct for its purpose and requires no changes.
 
-        app.get('/challenges', async (req, res) => {
-            const token = req.headers.authorization?.split(' ')[1];
-            if (!token) return res.status(401).json({ message: "Unauthorized" });
-        
-            try {
-                const decoded = jwt.verify(token, JWT_SECRET);
-                const { language } = req.query;
-                const uppercaseLanguage = language.toUpperCase(); // Convert to uppercase
-        
-                // Get the user ID from the decoded token
-                const userId = decoded.userId;
-        
-                // Fetch challenges that are not posted by the current user
-                const challenges = await challengesCollection.find({ 
-                    language: uppercaseLanguage,
-                    userId: { $ne: new ObjectId(userId) } // Exclude challenges posted by the current user
-                }).toArray();
-        
-                res.status(200).json({ challenges });
-            } catch (err) {
-                console.error(err);
-                res.status(500).json({ message: "Internal server error" });
-            }
-        });
-          
+app.get('/challenges', async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ message: "Unauthorized" });
 
-          app.get('/challenges/:id', async (req, res) => {
-            const token = req.headers.authorization?.split(' ')[1];
-            if (!token) return res.status(401).json({ message: "Unauthorized" });
-          
-            try {
-              const challengeId = req.params.id;
-              const challenge = await challengesCollection.findOne({ _id: new ObjectId(challengeId) });
-              if (!challenge) {
-                return res.status(404).json({ message: "Challenge not found" });
-              }
-              res.status(200).json({ challenge });
-            } catch (err) {
-              console.error(err);
-              res.status(500).json({ message: "Internal server error" });
-            }
-          });
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const { language, challengeType } = req.query;
+
+    let query = {
+      userId: { $ne: new ObjectId(decoded.userId) } // Exclude own challenges by default
+    };
+
+    if (challengeType && challengeType !== 'undefined') {
+      if (challengeType === 'placement') {
+        query.challengeType = 'placement'; 
+      } else if (challengeType === 'normal') {
+        query.challengeType = 'normal';
+      }
+    }
+
+    if (language && language !== 'undefined') {
+      query.language = language.toUpperCase();
+    }
+
+    const challenges = await challengesCollection.find(query).toArray();
+    res.status(200).json({ challenges });
+  } catch (err) {
+    console.error("Error fetching challenges:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 
 
  // Save submission to the database
@@ -744,148 +784,503 @@ app.post('/get-help', async (req, res) => {
     // Compile Code Endpoint
     // Updated compile endpoint with better error handling
     app.post("/compile", async (req, res) => {
-        console.log("Compile request received:", req.body); // Log the request body
-    
-        const { language, code, challengeId, userId } = req.body;
-    
-        // Validate input
-        if (!language || !code || !challengeId || !userId) {
-            return res.status(400).json({ error: "Missing required fields" });
+    console.log("Compile request received:", req.body);
+
+    const { language, code, challengeId, userId } = req.body;
+
+    if (!language || !code || !challengeId || !userId) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const normalizedLanguage = language.toLowerCase();
+
+    // Ensure language supported
+    if (!compilerMap[normalizedLanguage]) {
+        return res.status(400).json({ error: "Unsupported language" });
+    }
+
+    try {
+        const existingSolution = await solutionsCollection.findOne({
+            challengeId: new ObjectId(challengeId),
+            userId: new ObjectId(userId),
+        });
+
+        if (existingSolution) {
+            return res.status(400).json({
+                message: "You already solved this challenge. Please try other challenges.",
+            });
         }
-    
-        // Convert language to lowercase
-        const normalizedLanguage = language.toLowerCase();
-    
-        // Check if the language is supported
-        if (!languageMap[normalizedLanguage]) {
-            return res.status(400).json({ error: "Unsupported language" });
+
+        const challenge = await challengesCollection.findOne({
+            _id: new ObjectId(challengeId),
+        });
+
+        if (!challenge) {
+            return res.status(404).json({ error: "Challenge not found" });
         }
-    
-        try {
-            // Check if the user has already solved this challenge
-            const existingSolution = await solutionsCollection.findOne({
+
+        const testCases = challenge.testCases;
+        const results = [];
+        let allPassed = true;
+
+        const { lang: compilerLang, ext } = compilerMap[normalizedLanguage];
+
+        for (let i = 0; i < testCases.length; i++) {
+            const stdin = testCases[i].input;
+
+            let requestData = {
+                language: compilerLang,  // ✅ correct compiler identifier
+                stdin: stdin,
+            };
+
+            if (normalizedLanguage === "java") {
+                const classNameMatch = code.match(/public\s+class\s+(\w+)/);
+                const className = classNameMatch ? classNameMatch[1] : "Main";
+
+                requestData.files = [
+                    { name: `${className}.java`, content: code }
+                ];
+            } else {
+                requestData.files = [
+                    { name: `main.${ext}`, content: code }
+                ];
+            }
+
+            try {
+                const response = await axios.post(
+                    ONECOMPILER_URL,
+                    requestData,
+                    {
+                        headers: {
+                            "x-rapidapi-key": RAPIDAPI_KEY,
+                            "x-rapidapi-host": "onecompiler-apis.p.rapidapi.com",
+                            "Content-Type": "application/json",
+                        },
+                        timeout: 15000,
+                    }
+                );
+
+                const result = response.data;
+
+                const output = [result.stdout, result.stderr, result.error]
+                    .filter(Boolean)
+                    .join("\n")
+                    .trim() || "No output";
+
+                const passed = output === testCases[i].output.trim();
+
+                results.push({
+                    input: testCases[i].input,
+                    expectedOutput: testCases[i].output,
+                    actualOutput: output,
+                    passed,
+                });
+
+                if (!passed) allPassed = false;
+            } catch (innerError) {
+                console.error("Error running code:", innerError);
+                results.push({
+                    input: testCases[i].input,
+                    expectedOutput: testCases[i].output,
+                    actualOutput: `Execution Error: ${innerError.response?.data?.message || innerError.message}`,
+                    passed: false,
+                });
+                allPassed = false;
+            }
+        }
+
+        if (allPassed) {
+            let coinsToAdd = 0;
+            switch (challenge.difficulty.toLowerCase()) {
+                case "basic":
+                    coinsToAdd = 3;
+                    break;
+                case "intermediate":
+                    coinsToAdd = 5;
+                    break;
+                case "advanced":
+                    coinsToAdd = 7;
+                    break;
+            }
+
+            await solutionsCollection.insertOne({
                 challengeId: new ObjectId(challengeId),
                 userId: new ObjectId(userId),
+                code,
+                results,
+                createdAt: new Date(),
+                supercoins: coinsToAdd,
             });
-    
-            if (existingSolution) {
-                return res.status(400).json({
-                    message: "You already solved this challenge. Please try to solve other challenges.",
-                });
-            }
-    
-            // Fetch the challenge from the database
-            const challenge = await challengesCollection.findOne({
-                _id: new ObjectId(challengeId),
-            });
-    
-            if (!challenge) {
-                return res.status(404).json({ error: "Challenge not found" });
-            }
-    
-            const testCases = challenge.testCases;
-            const results = [];
-            let allPassed = true;
-    
-            // Execute code for each test case
-            for (let i = 0; i < testCases.length; i++) {
-                const stdin = testCases[i].input;
-    
-                try {
-                    const response = await axios.post(
-                        ONECOMPILER_URL,
-                        {
-                            language: languageMap[language.toLowerCase()],
-                            stdin: stdin,
-                            files: [{ name: "main.c", content: code }],
-                        },
-                        {
-                            headers: {
-                                "x-rapidapi-key": RAPIDAPI_KEY,
-                                "x-rapidapi-host": "onecompiler-apis.p.rapidapi.com",
-                                "Content-Type": "application/json",
-                            },
-                            timeout: 10000,
-                        }
-                    );
-    
-                    const result = response.data;
-    
-                    // Combine stdout, stderr, and error into a single output
-                    const output = [result.stdout, result.stderr, result.error]
-                    .filter(Boolean)
-                    .join("\n") || "No output";
-    
-                    // Check if the output matches the expected output
-                    const passed = output.trim() === testCases[i].output.trim();
-                    results.push({
-                        input: testCases[i].input,
-                        expectedOutput: testCases[i].output,
-                        actualOutput: output.trim(),
-                        passed,
-                    });
-    
-                    if (!passed) {
-                        allPassed = false;
-                    }
-                } catch (innerError) {
-                    console.error("Error running code:", innerError);
-                    results.push({
-                        input: testCases[i].input,
-                        expectedOutput: testCases[i].output,
-                        actualOutput: `Error: ${innerError.message}`,
-                        passed: false,
-                    });
-                    allPassed = false;
-                }
-            }
-    
-            // Save the solution if all test cases passed
-            if (allPassed) {
-                // Calculate supercoins based on challenge difficulty
-                let coinsToAdd = 0;
-                switch (challenge.difficulty.toLowerCase()) {
-                    case 'basic':
-                        coinsToAdd = 3;
-                        break;
-                    case 'intermediate':
-                        coinsToAdd = 5;
-                        break;
-                    case 'advanced':
-                        coinsToAdd = 7;
-                        break;
-                    default:
-                        coinsToAdd = 0;
-                }
-    
-                const solution = {
-                    challengeId: new ObjectId(challengeId),
-                    userId: new ObjectId(userId),
-                    code,
-                    results,
-                    createdAt: new Date(),
-                    supercoins: coinsToAdd, // Add supercoins to the solution
-                };
-    
-                await solutionsCollection.insertOne(solution);
-    
-                // Add coins to the user's profile based on the difficulty level
-                await usersCollection.updateOne(
-                    { _id: new ObjectId(userId) },
-                    { $inc: { supercoins: coinsToAdd } }
-                );
-            }
-    
-            // Return the results
-            res.json({ results, allPassed });
-        } catch (error) {
-            console.error("Compilation Error:", error);
-            res.status(500).json({
-                error: "Execution failed",
-                details: error.message,
-            });
+
+            await usersCollection.updateOne(
+                { _id: new ObjectId(userId) },
+                { $inc: { supercoins: coinsToAdd } }
+            );
         }
+
+        res.json({ results, allPassed });
+    } catch (error) {
+        console.error("Compilation Error:", error);
+        res.status(500).json({
+            error: "Execution failed",
+            details: error.message,
+        });
+    }
+});
+
+
+
+    // Gemini Compiler Endpoint (no DB insert, just test cases execution)
+app.post("/geminicompiler", async (req, res) => {
+    console.log("Gemini compile request received:", req.body);
+
+    let { language, code, testCases } = req.body;
+
+    if (!language || !code || !testCases) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const normalizedLanguage = language.toLowerCase();
+    if (!languageMap[normalizedLanguage]) {
+        return res.status(400).json({ error: "Unsupported language" });
+    }
+
+    // Clean template code (optional)
+    code = code.replace(/^#\s*Write your code here\s*\n?/, "");
+
+    try {
+        const results = [];
+        let allPassed = true;
+
+        // Determine correct filename
+        let filename;
+        if (normalizedLanguage === "cpp") filename = "main.cpp";
+        else if (normalizedLanguage === "java") {
+            const classMatch = code.match(/public\s+class\s+([A-Za-z_]\w*)/);
+            const className = classMatch ? classMatch[1] : "Main";
+            filename = `${className}.java`;
+        } else if (normalizedLanguage === "python") filename = "main.py";
+        else if (normalizedLanguage === "c") filename = "main.c";
+        else filename = "main.js";
+
+        for (let i = 0; i < testCases.length; i++) {
+            const stdin = testCases[i].input;
+
+            try {
+                const response = await axios.post(
+                    ONECOMPILER_URL,
+                    {
+                        language: languageMap[normalizedLanguage], // ✅ correct API identifier
+                        stdin,
+                        files: [{ name: filename, content: code }]
+                    },
+                    {
+                        headers: {
+                            "x-rapidapi-key": RAPIDAPI_KEY,
+                            "x-rapidapi-host": "onecompiler-apis.p.rapidapi.com",
+                            "Content-Type": "application/json"
+                        },
+                        timeout: 10000
+                    }
+                );
+
+                const result = response.data;
+                const output = [result.stdout, result.stderr, result.error]
+                    .filter(Boolean)
+                    .join("\n")
+                    .trim() || "No output";
+
+                const passed = output === testCases[i].output.trim();
+
+                results.push({
+                    input: testCases[i].input,
+                    expectedOutput: testCases[i].output,
+                    actualOutput: output,
+                    passed
+                });
+
+                if (!passed) allPassed = false;
+            } catch (innerError) {
+                console.error("Error running code:", innerError);
+                results.push({
+                    input: testCases[i].input,
+                    expectedOutput: testCases[i].output,
+                    actualOutput: `Execution Error: ${innerError.response?.data?.message || innerError.message}`,
+                    passed: false
+                });
+                allPassed = false;
+            }
+        }
+
+        res.json({ results, allPassed });
+    } catch (error) {
+        console.error("Gemini Compilation Error:", error);
+        res.status(500).json({
+            error: "Execution failed",
+            details: error.message
+        });
+    }
+});
+
+app.post("/api/generateroadmap", async (req, res) => {
+  const { technology, days } = req.body;
+
+  if (!technology || !days) {
+    return res
+      .status(400)
+      .json({ error: "Technology and days are required" });
+  }
+
+  try {
+    const prompt = `
+Create a ${days}-day step-by-step learning roadmap for ${technology}.  
+
+⚡ Rules:
+1. Strictly generate exactly ${days} days — no extra summary, no introduction, no conclusion.
+2. Each day should start with "Day X:" (e.g., Day 1: ...).
+3. Each day must have 2–4 clear tasks (topics + practical exercise).
+4. Keep it concise, simple, and actionable.
+5. Do not use markdown (**bold**, bullets, headings). Only plain text.
+6. Output format must be exactly:
+
+Day 1: ...
+- Task 1
+- Task 2
+Day 2: ...
+- Task 1
+- Task 2
+...
+Day ${days}: ...
+- Task 1
+- Task 2
+`;
+
+
+    const response = await fetch(`${GEMINI_ENDPOINT}?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048,
+        },
+      }),
     });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Gemini API error:", data);
+      return res.status(response.status).json(data);
+    }
+
+    const aiText =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "No roadmap generated.";
+
+    res.json({ roadmap: aiText });
+  } catch (error) {
+    console.error("Error generating roadmap:", error);
+    res.status(500).json({ error: "Failed to generate roadmap" });
+  }
+});
+
+// Save a mock test attempt
+// Save a mock test attempt (secure: uses JWT to identify user)
+app.post('/attempts', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    // Find user in DB
+    const user = await usersCollection.findOne({ email: decoded.email });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const {
+      company,
+      quizCorrect,
+      quizTotal,
+      codingPts,
+      total,
+      timeTakenSec = null,
+      durationSec = null,
+      meta = {}
+    } = req.body || {};
+
+    // Basic validation
+    if (!company ||
+        typeof quizCorrect !== "number" ||
+        typeof quizTotal !== "number" ||
+        typeof codingPts !== "number" ||
+        typeof total !== "number") {
+      return res.status(400).json({ error: "Missing or invalid fields." });
+    }
+
+    const doc = {
+      userId: user._id.toString(),
+      userName: user.fullName || user.email,
+      company,
+      quizCorrect,
+      quizTotal,
+      codingPts,
+      total,
+      timeTakenSec,
+      durationSec,
+      meta,
+      createdAt: new Date()
+    };
+
+    const result = await attemptsCollection.insertOne(doc);
+    res.status(201).json({ ok: true, attemptId: result.insertedId });
+  } catch (err) {
+    console.error("POST /attempts error:", err);
+    res.status(500).json({ error: "Failed to save attempt." });
+  }
+});
+
+
+// Get attempt history for a user
+// Get attempt history for the logged-in user
+app.get('/attempts/history', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    // Find user
+    const user = await usersCollection.findOne({ email: decoded.email });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const page = Math.max(1, parseInt(req.query.page || "1", 10));
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit || "20", 10)));
+
+    const cursor = attemptsCollection.find({ userId: user._id.toString() })
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    const items = await cursor.toArray();
+    const total = await attemptsCollection.countDocuments({ userId: user._id.toString() });
+
+    res.json({ page, limit, total, items });
+  } catch (err) {
+    console.error("GET /attempts/history error:", err);
+    res.status(500).json({ error: "Failed to fetch history." });
+  }
+});
+
+
+// Get leaderboard (company-specific or global)
+// Leaderboard: best score per user (global or company-specific)
+app.get('/attempts/leaderboard', async (req, res) => {
+  try {
+    const company = req.query.company; // optional
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit || "50", 10)));
+    const sinceDays = parseInt(req.query.sinceDays || "0", 10);
+
+    const match = {};
+    if (company) match.company = company;
+    if (sinceDays > 0) match.createdAt = { $gte: new Date(Date.now() - sinceDays * 86400 * 1000) };
+
+    const pipeline = [
+      { $match: match },
+      {
+        $group: {
+          _id: "$userId",
+          userName: { $first: "$userName" },
+          totalScore: { $sum: "$total" },   // 👈 cumulative score
+          bestScore: { $max: "$total" },
+          bestTime: { $min: "$timeTakenSec" },
+          lastAttemptAt: { $max: "$createdAt" }
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "userProfile"
+        }
+      },
+      { $unwind: { path: "$userProfile", preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          userId: "$_id",
+          userName: 1,
+          totalScore: 1,   // 👈 include in response
+          bestScore: 1,
+          bestTime: 1,
+          lastAttemptAt: 1,
+          userProfile: {
+            fullName: "$userProfile.fullName",
+            email: "$userProfile.email",
+            photo: "$userProfile.photo"
+          }
+        }
+      },
+      { $sort: { totalScore: -1 } },   // 👈 sort by cumulative score, high → low
+      { $limit: limit }
+    ];
+
+    const items = await attemptsCollection.aggregate(pipeline).toArray();
+    res.json({ company: company || null, limit, sinceDays: sinceDays || null, items });
+  } catch (err) {
+    console.error("GET /attempts/leaderboard error:", err);
+    res.status(500).json({ error: "Failed to fetch leaderboard." });
+  }
+});
+
+// Get total users count
+app.get('/total-users', async (req, res) => {
+  try {
+    const totalUsers = await usersCollection.countDocuments();
+    res.status(200).json({ totalUsers });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Get total challenges count
+app.get('/total-challenges', async (req, res) => {
+  try {
+    const totalChallenges = await challengesCollection.countDocuments();
+    res.status(200).json({ totalChallenges });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Get supported languages count (fixed at 6)
+app.get('/supported-languages', async (req, res) => {
+  try {
+    const supportedLanguages = 6; // Fixed count as requested
+    res.status(200).json({ supportedLanguages });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
   const PORT = process.env.PORT;
    app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
@@ -896,5 +1291,7 @@ app.post('/get-help', async (req, res) => {
         process.exit(1);
     }
 }
+
+
 
 main().catch(console.error);

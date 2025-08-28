@@ -1,0 +1,533 @@
+body {
+  margin: 0;
+  /* Remove all scrollbars */
+}
+
+.slv-filter-container {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  padding: 10px;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.slv-filter-section {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.slv-filter-section label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.slv-filter-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.slv-filter-button:hover {
+  background-color: #218838;
+}
+
+.slv-questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.slv-question-card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 5px;
+}
+
+/* Left Panel (Questions and Filters or Selected Challenge) */
+.slv-solving-page-container {
+  display: flex;
+  height: 100%;
+  overflow: hidden; /* Remove all scrollbars */
+}
+
+.slv-question-section {
+  width: 50%;
+  padding: 20px;
+  background-color: #f5f5f5;
+  border-right: 1px solid #ddd;
+  overflow-y: auto; /* Enable scrolling if content overflows */
+}
+
+.slv-compiler-section {
+  width: 50%;
+  padding: 20px;
+  background-color: #fff;
+  overflow-y: auto; /* Enable scrolling if content overflows */
+}
+
+.selected-challenge {
+  margin-bottom: 20px;
+}
+
+/* Back Button */
+.back-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.back-button:hover {
+  background-color: #0056b3;
+}
+
+/* Solve Challenge Button */
+.solve-challenge-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin-top: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.solve-challenge-button:hover {
+  background-color: #45a049;
+}
+
+/* Question Card */
+.slv-question-card {
+  background-color: #fff;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Filter Section */
+.slv-filter-section {
+  margin-bottom: 20px;
+}
+
+.slv-filter-section label {
+  margin-right: 15px;
+}
+
+.slv-filter-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.slv-filter-button:hover {
+  background-color: #0056b3;
+}
+
+.selected-challenge {
+  margin-bottom: 20px;
+}
+
+/* Back Button */
+.back-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.back-button:hover {
+  background-color: #0056b3;
+}
+
+/* Test Cases */
+.test-cases {
+  margin-top: 20px;
+}
+
+.test-cases pre {
+  background-color: #e9ecef;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.view-all-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin-top: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.view-all-button:hover {
+  background-color: #218838;
+}
+
+.all-test-cases {
+  margin-top: 20px;
+}
+
+.test-case {
+  margin-bottom: 20px;
+}
+
+/* Compiler Section */
+.code-editor {
+  width: 100%;
+  height: 200px;
+  padding: 10px;
+  font-family: monospace;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.compile-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.compile-button:hover {
+  background-color: #0056b3;
+}
+
+/* Action Buttons */
+.action-buttons {
+  margin-top: 20px;
+}
+
+
+
+/* General Styles */
+.slv-solving-page-container {
+    display: flex;
+    height: 100vh; /* Ensure it takes full viewport height */
+    background-color: #f5f5f5;
+    overflow: hidden; /* Keep this, but fix child elements */
+}
+
+
+/* Left Panel (Questions and Filters or Selected Challenge) */
+.slv-question-section {
+    width: 50%;
+    padding: 20px;
+    background-color: #fff;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+    height: 100vh; /* Ensure it fills available height */
+}
+
+
+.slv-question-section::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+
+.slv-compiler-section {
+  width: 50%;
+  background-color: #1e1e1e;
+  color: white;
+  overflow-y: auto; /* Enable scrolling if content overflows */
+}
+
+.slv-compiler-section::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+
+/* Compiler Tabs */
+/* Compiler Tabs and Buttons Container */
+.compiler-tabs {
+  display: flex;
+  align-items: center; /* Align buttons vertically */
+  gap: 10px; /* Space between buttons */
+  background-color: #252526; /* Dark background to match the editor theme */
+  padding: 10px;
+  border-bottom: 1px solid #555;
+  flex-shrink: 0;
+}
+
+/* Tab Buttons (Code, Output) */
+.tab-button {
+  background-color: transparent;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px; /* Smaller font size */
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.tab-button.active {
+  background-color: #007bff; /* Blue background for active tab */
+}
+
+/* Language Select Dropdown */
+.language-select {
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 8px 12px; /* Reduced padding for smaller height */
+  font-size: 14px; /* Smaller font size */
+  border-radius: 5px;
+  margin-left: auto; /* Push to the right */
+}
+
+/* Run & Help Buttons - Fixed Version */
+.run-button, .help-button {
+  position: relative;
+  min-width: 80px;
+  height: 32px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.run-button {
+  background-color: #28a745;
+  color: white;
+}
+
+.help-button {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Single Spinner Implementation */
+.button-spinner {
+  display: none; /* Hide the inline spinner initially */
+}
+
+.run-button.loading::after,
+.help-button.loading::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s linear infinite;
+}
+
+/* Button Loading States */
+.run-button.loading,
+.help-button.loading {
+  color: transparent; /* Hide text */
+  pointer-events: none; /* Disable clicks */
+}
+
+.run-button:disabled,
+.help-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@keyframes spin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.help-button:hover,
+.view-answers-button:hover {
+  background-color: #5a6268; /* Darker gray on hover */
+}
+.run-button:disabled {
+  background-color: #555; /* Gray background when disabled */
+  cursor: not-allowed;
+}
+
+/*  View Answers Buttons */
+.view-answers-button {
+  height: 32px;  /* Fixed height */
+  min-width: 80px;  /* Prevent width collapse */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #007bff; /* Gray background */
+  color: white;
+  border: none;
+  padding: 0; /* Remove extra padding */
+  cursor: pointer;
+  font-size: 14px; /* Smaller font size */
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+  position: relative; /* Ensure spinner is positioned correctly */
+}
+
+
+/* Code Editor */
+.editor-container {
+  height: calc(100vh - 150px);
+}
+
+/* Input Section */
+.input-section {
+  padding: 10px;
+  background-color: #252526;
+}
+
+.input-field {
+  width: 100%;
+  padding: 10px;
+  font-family: monospace;
+  font-size: 14px;
+  border: 1px solid #555;
+  border-radius: 5px;
+  background-color: #1e1e1e;
+  color: white;
+  margin-bottom: 10px;
+}
+
+/* Output Section */
+.output-section {
+  padding: 20px;
+  background-color: #1e1e1e;
+  height: calc(100vh - 150px);
+  overflow-y: auto;
+}
+
+.output-field {
+  background-color: #252526;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 14px;
+}
+.resize-observer[data-v-xxxxxxx] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: transparent;
+  pointer-events: none;
+}
+/* Solutions Section */
+.answers-section {
+  background-color: #1e1e1e; /* Dark background to match the editor theme */
+  color: white;
+  padding: 20px;
+  border-radius: 5px;
+  margin-top: 20px;
+  height: calc(100vh - 150px); /* Full height minus some padding */
+  overflow-y: auto; /* Enable scrolling if content overflows */
+  position: relative; /* For positioning the close button */
+}
+
+.answers-section h3 {
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: #007bff; /* Blue color for the heading */
+}
+
+.solution-card {
+  background-color: #252526; /* Slightly lighter dark background */
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.solution-card h4 {
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #28a745; /* Green color for solution titles */
+}
+
+.solution-card pre {
+  background-color: #1e1e1e; /* Dark background for code */
+  padding: 10px;
+  border-radius: 5px;
+  color: #f8f9fa; /* Light text color for code */
+  font-family: monospace;
+  font-size: 14px;
+  white-space: pre-wrap; /* Preserve formatting but wrap text */
+}
+
+.solution-card p {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #adb5bd; /* Light gray for metadata */
+}
+
+/* Close Button for Solutions Section */
+.close-solutions-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent;
+  color: white;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+.close-solutions-button:hover {
+  background-color: #555; /* Slightly lighter background on hover */
+}

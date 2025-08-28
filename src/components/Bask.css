@@ -1,0 +1,59 @@
+.bask-container {
+  text-align: center;
+  padding: 40px;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+.bask-title {
+  font-size: 2.5rem;
+  color: #2d3748;
+  margin-bottom: 10px;
+}
+
+.bask-subtitle {
+  font-size: 1.2rem;
+  color: #4a5568;
+  margin-bottom: 40px;
+}
+
+.bask-cards {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.bask-card {
+  background: white;
+  width: 280px;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  padding: 20px;
+  transition: transform 0.3s, box-shadow 0.3s;
+  text-align: center;
+}
+
+.bask-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.bask-card-img {
+  width: 100%;
+  height: 160px;
+  object-fit: contain;
+  margin-bottom: 15px;
+}
+
+.bask-card-title {
+  font-size: 1.5rem;
+  color: #2b6cb0;
+  margin-bottom: 8px;
+}
+
+.bask-card-desc {
+  font-size: 0.95rem;
+  color: #4a5568;
+}
