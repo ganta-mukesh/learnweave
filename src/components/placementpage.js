@@ -9,6 +9,7 @@ import RoadmapsSection from './RoadmapsSection';
 import InterviewSection from './InterviewSection';
 import Bask from './Bask';
 
+
 // Mock data
 const COMPANIES = ['All', 'TCS', 'Infosys', 'Amazon', 'Microsoft', 'Google', 'Facebook'];
 const AI_TIPS = [

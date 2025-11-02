@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode'; // 👈 install with npm install jwt-decode
 
+const baseURL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 const ChallengePage = () => {
     const [testCases, setTestCases] = useState([{ input: '', output: '' }]);
     const [steps, setSteps] = useState(['']);
@@ -23,7 +24,7 @@ const ChallengePage = () => {
     useEffect(() => {
        const token = localStorage.getItem('token');
     if (token) {
-        axios.get('http://localhost:4000/check-admin', {
+        axios.get(`${baseURL}/check-admin`, {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(res => {
@@ -111,7 +112,7 @@ console.log('Sending challenge data:', challengeData);
                     Authorization: `Bearer ${token}`,
                 },
             };
-            const response = await axios.post('http://localhost:4000/submit-challenge', challengeData, config);
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/submit-challenge`, challengeData, config);
 
             if (response.data.message.includes("not a valid coding challenge")) {
                 setErrorMessage(response.data.message);

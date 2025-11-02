@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './NotificationPage.css'; // Import your CSS file
+
+const baseURL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 const NotificationPage = ({ user, setNotificationCount }) => {
     const [notifications, setNotifications] = useState([]);
     const navigate = useNavigate(); // Initialize navigate
@@ -10,7 +12,7 @@ const NotificationPage = ({ user, setNotificationCount }) => {
         const fetchNotifications = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await axios.get('http://localhost:4000/notifications', {
+                const response = await axios.get(`${baseURL}/notifications`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -32,7 +34,7 @@ const NotificationPage = ({ user, setNotificationCount }) => {
     const markNotificationsAsSeen = async () => {
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:4000/notifications/mark-seen', {}, {
+            await axios.post(`${baseURL}/notifications/mark-seen`, {}, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -69,7 +71,7 @@ const NotificationPage = ({ user, setNotificationCount }) => {
         try {
             const token = localStorage.getItem('token');
             const response = await axios.get(
-                `http://localhost:4000/challenges/${challengeId}`,
+                `${baseURL}/challenges/${challengeId}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,

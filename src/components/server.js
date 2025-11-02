@@ -10,10 +10,8 @@ const fs = require("fs"); // Import fs module
 const { exec } = require("child_process"); // Import child_process module
 const axios = require("axios");
 const path = require('path');
-require('dotenv').config({
-    path: path.resolve(__dirname, '../components/.env') // Adjust the number of ../ as needed
-  });
-  console.log("Using .env file at:", path.resolve(__dirname, '../components/.env'))
+require('dotenv').config();
+console.log("✅ Using default .env file from:", path.resolve(__dirname, '.env'));
 const app = express();
 
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
@@ -50,7 +48,12 @@ const compilerMap = {
 
   
 // Middleware
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+//before deploying the server
+/*app.use(cors({ origin: 'http://localhost:3000', credentials: true }));*/
+app.use(cors({
+  origin: process.env.CLIENT_ORIGIN || '*',
+  credentials: true
+}));
 app.use(bodyParser.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -1280,11 +1283,31 @@ app.get('/supported-languages', async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
-  const PORT = process.env.PORT;
+    // before deploying the server
+  /*const PORT = process.env.PORT;
    app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
+    });*/
+
+    // deploy code:
+    // ✅ Serve React build folder in production
+
+        if (process.env.NODE_ENV === "production") {
+    // Serve React build folder
+    app.use(express.static(path.join(__dirname, "../../build")));
+
+    // Serve index.html for all routes
+    app.get("*", (req, res) => {
+        res.sendFile(path.join(__dirname, "../../build", "index.html"));
     });
+    }
+
+    const PORT = process.env.PORT || 10000;
+    app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    });
+
+
 
     } catch (err) {
         console.error("❌ MongoDB connection failed:", err);

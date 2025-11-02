@@ -4,6 +4,7 @@ import { Coins } from 'lucide-react';
 import axios from 'axios';
 import './Dashboard.css';
 
+const baseURL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('progress');
   const [progressValues, setProgressValues] = useState({});
@@ -59,7 +60,7 @@ const Dashboard = () => {
     const fetchUserData = async () => {
       try {
         // Fetch profile data including supercoins
-        const profileResponse = await axios.get('http://localhost:4000/get-profile', {
+        const profileResponse = await axios.get(`${baseURL}/get-profile`, {
           headers: { 
             Authorization: `Bearer ${localStorage.getItem('token')}` 
           }
@@ -68,7 +69,7 @@ const Dashboard = () => {
         if (profileResponse.data.user) {
           let photoUrl = profileResponse.data.user.photo;
           if (photoUrl && !photoUrl.startsWith('http')) {
-            photoUrl = `http://localhost:4000${photoUrl}`;
+            photoUrl = `${process.env.REACT_APP_API_URL}${photoUrl}`;
           }
           
           setUserProfile({
@@ -81,10 +82,10 @@ const Dashboard = () => {
 
         // Fetch challenges and solutions counts
         const [challengesRes, solutionsRes] = await Promise.all([
-          axios.get('http://localhost:4000/api/user-challenges', {
+          axios.get(`${process.env.REACT_APP_API_URL}/api/user-challenges`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           }),
-          axios.get('http://localhost:4000/api/user-solutions', {
+          axios.get(`${process.env.REACT_APP_API_URL}/api/user-solutions`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           })
         ]);

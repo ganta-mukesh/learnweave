@@ -18,6 +18,7 @@ import { FaJs, FaPython, FaDatabase, FaCuttlefish, FaJava, FaRobot } from 'react
 import { SiCplusplus } from 'react-icons/si';
 import './Homepage.css';
 
+const baseURL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 const HomePage = ({ user, handleSignOut }) => {
   const navigate = useNavigate();
   const [totalSupercoins, setTotalSupercoins] = useState(0);
@@ -44,7 +45,7 @@ const HomePage = ({ user, handleSignOut }) => {
   // Fetch user profile
   const fetchUserProfile = async () => {
     try {
-      const response = await fetch('http://localhost:4000/get-profile', {
+      const response = await fetch(`${baseURL}/get-profile`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -63,7 +64,7 @@ const HomePage = ({ user, handleSignOut }) => {
   // Fetch notifications
   const fetchNotifications = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:4000/notifications', {
+      const response = await fetch(`${baseURL}/notifications`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -85,7 +86,7 @@ const HomePage = ({ user, handleSignOut }) => {
   const fetchStatsData = async () => {
     try {
       // Fetch total users
-      const usersResponse = await fetch('http://localhost:4000/total-users', {
+      const usersResponse = await fetch(`${baseURL}/total-users`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -94,7 +95,7 @@ const HomePage = ({ user, handleSignOut }) => {
       const usersData = await usersResponse.json();
       
       // Fetch total challenges
-      const challengesResponse = await fetch('http://localhost:4000/total-challenges', {
+      const challengesResponse = await fetch(`${baseURL}/total-challenges`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -103,7 +104,7 @@ const HomePage = ({ user, handleSignOut }) => {
       const challengesData = await challengesResponse.json();
       
       // Fetch supported languages (though it's fixed at 6)
-      const languagesResponse = await fetch('http://localhost:4000/supported-languages', {
+      const languagesResponse = await fetch(`${baseURL}/supported-languages`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -155,7 +156,7 @@ const HomePage = ({ user, handleSignOut }) => {
     }
 
     try {
-      const response = await fetch('http://localhost:4000/update-profile', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/update-profile`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -194,7 +195,7 @@ const HomePage = ({ user, handleSignOut }) => {
 
   const handleNotificationClick = async () => {
     try {
-      const response = await fetch('http://localhost:4000/notifications/mark-seen', {
+      const response = await fetch(`${baseURL}/notifications/mark-seen`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -289,7 +290,7 @@ const HomePage = ({ user, handleSignOut }) => {
             <div className="profile-dropdown">
               <div className="profile-icon" onClick={toggleProfile}>
                 {profileData.photo ? (
-                  <img src={`http://localhost:4000${profileData.photo}`} alt="Profile" className="avatar-icon rounded-icon" />
+                  <img src={`${baseURL}${profileData.photo}`} alt="Profile" className="avatar-icon rounded-icon" />
                 ) : (
                   <User className="avatar-icon rounded-icon" />
                 )}

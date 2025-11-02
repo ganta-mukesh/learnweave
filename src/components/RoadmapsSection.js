@@ -10,6 +10,8 @@ import { toPng, toSvg } from "html-to-image";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
+
+const baseURL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 const RoadmapFlow = ({ nodes, edges }) => {
   const { setCenter } = useReactFlow();
 
@@ -55,7 +57,7 @@ const RoadmapsSection = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:4000/api/generateroadmap", {
+      const response = await fetch(`${baseURL}/api/generateroadmap`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ technology, days }),

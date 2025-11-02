@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Landingpage.css';
 
+const baseURL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 const LandingPage = () => {
     const navigate = useNavigate();
 
@@ -11,7 +12,7 @@ const LandingPage = () => {
 
         if (token && email) {
             try {
-                const response = await fetch('http://localhost:4000/check-user', {
+                const response = await fetch(`${baseURL}/check-user`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email }),

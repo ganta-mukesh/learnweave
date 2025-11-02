@@ -5,6 +5,7 @@ import axios from "axios";
 import { jwtDecode } from 'jwt-decode';
 import "./SolvingPage.css";
 
+const baseURL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 const languageToCompilerMap = {
   JAVASCRIPT: "javascript",
   PYTHON: "python",
@@ -48,7 +49,7 @@ const SolvingPage = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        let url = `http://localhost:4000/challenges?language=${encodeURIComponent(language)}`;
+        let url = `${baseURL}/challenges?language=${encodeURIComponent(language)}`;
         
         // Add challenge type filter if specified (from placement page)
         if (challengeType && challengeType !== "all") {
@@ -107,7 +108,7 @@ const SolvingPage = () => {
 
     try {
         const response = await axios.get(
-            `http://localhost:4000/solutions?challengeId=${challenge._id}&userId=${userId}`,
+            `${baseURL}/solutions?challengeId=${challenge._id}&userId=${userId}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -160,7 +161,7 @@ const SolvingPage = () => {
         }
 
         const response = await axios.post(
-            "http://localhost:4000/compile",
+            `${baseURL}/compile`,
             {
                 language: compilerLanguage.toLowerCase(),
                 code,
@@ -242,7 +243,7 @@ const SolvingPage = () => {
 
     try {
         const response = await axios.get(
-            `http://localhost:4000/solutions?challengeId=${selectedChallenge._id}`,
+            `${baseURL}/solutions?challengeId=${selectedChallenge._id}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -282,7 +283,7 @@ const SolvingPage = () => {
       }
 
       const response = await axios.post(
-        "http://localhost:4000/get-help",
+        `${baseURL}/get-help`,
         {
           challengeId: selectedChallenge._id
         },

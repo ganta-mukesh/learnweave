@@ -41,13 +41,14 @@
     "web-vitals": "^4.2.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "node server.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "backend": "node src/components/server.js",
     "backend-dev": "nodemon src/components/server.js",
-    "full-dev": "concurrently \"npm run backend-dev\" \"npm run start\""
+    "full-dev": "concurrently \"npm run backend-dev\" \"npm run start\"",
+    "render-build": "npm run build"
   },
   "eslintConfig": {
     "extends": [

@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Editor from "@monaco-editor/react";
 
+const baseURL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 // ====== CONFIG ======
-const COMPILER_API = "http://localhost:4000/compile";
+const COMPILER_API = `${baseURL}/compile`;
 const GEMINI_ENDPOINT =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 const GEMINI_API_KEY = "AIzaSyC2Psvxy3aRne0-berI59WXCCPaKRW_5-g";
@@ -62,7 +63,7 @@ async function getLoggedUser() {
   if (!token) return null;
   
   try {
-    const res = await fetch("http://localhost:4000/get-profile", {
+    const res = await fetch(`${baseURL}/get-profile`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) return null;
@@ -208,7 +209,7 @@ export default function MockTestsSection() {
     setRunResults(null);
     setError("");
     try {
-      const res = await fetch("http://localhost:4000/geminicompiler", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/geminicompiler`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ language, code, testCases: challenge.testCases }),
@@ -276,7 +277,7 @@ export default function MockTestsSection() {
 
     try {
       const token = getAuthToken();
-      const res = await fetch("http://localhost:4000/attempts", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/attempts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -310,7 +311,7 @@ export default function MockTestsSection() {
         alert("Please login to view history.");
         return;
       }
-      const res = await fetch(`http://localhost:4000/attempts/history?page=1&limit=50`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/attempts/history?page=1&limit=50`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -325,7 +326,7 @@ export default function MockTestsSection() {
   async function loadLeaderboard() {
     try {
       const token = getAuthToken();
-      let url = "http://localhost:4000/attempts/leaderboard?limit=50";
+      let url = `${process.env.REACT_APP_API_URL}/attempts/leaderboard?limit=50`;
       if (company) url += `&company=${encodeURIComponent(company)}`;
       
       const res = await fetch(url, {

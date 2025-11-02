@@ -9,6 +9,7 @@ const LANGUAGES = [
   { id: 'c', name: 'C', icon: 'C', color: '#283593' }
 ];
 
+const baseURL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 const CodingPractice = ({ resources }) => {
   const [selectedPracticeLang, setSelectedPracticeLang] = useState(null);
   const navigate = useNavigate();

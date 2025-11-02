@@ -11,6 +11,8 @@ import InterviewQuestions from './components/InterviewPage';
 import Dashboard from './components/Dashboardpage';
 import PlacementPage from './components/placementpage'
 // MainApp component that uses useNavigate
+
+const baseURL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 const MainApp = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [user, setUser] = useState(null);
@@ -39,7 +41,7 @@ const MainApp = () => {
         localStorage.setItem("token", token);
 
         try {
-            const response = await fetch('http://localhost:4000/get-profile', {
+            const response = await fetch(`${baseURL}/get-profile`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

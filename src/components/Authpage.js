@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './Authpage.css';
 import LEARNWEAVE from './LEARNWEAVE.png';
 
+const baseURL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 const AuthPage = ({ onAuthSuccess, isSignup }) => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -49,7 +50,7 @@ const AuthPage = ({ onAuthSuccess, isSignup }) => {
         setSuccessMessage('');
         setIsLoading(true);
 
-        const url = isLoginState ? 'http://localhost:4000/login' : 'http://localhost:4000/signup';
+        const url = isLoginState ? `${baseURL}/login` : `${baseURL}/signup`;
         const body = isLoginState
             ? { email: formData.email, password: formData.password }
             : { fullName: formData.fullName, email: formData.email, password: formData.password };
@@ -86,7 +87,7 @@ const AuthPage = ({ onAuthSuccess, isSignup }) => {
 
     const sendOtp = async () => {
         try {
-            const response = await fetch('http://localhost:4000/sendotp', {
+            const response = await fetch(`${baseURL}/sendotp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: formData.email }),
@@ -106,7 +107,7 @@ const AuthPage = ({ onAuthSuccess, isSignup }) => {
     const verifyOtp = async () => {
         try {
             const otpValue = formData.otp.join('');
-            const response = await fetch('http://localhost:4000/verify', {
+            const response = await fetch(`${baseURL}/verify`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: formData.email, otp: otpValue }),
@@ -125,7 +126,7 @@ const AuthPage = ({ onAuthSuccess, isSignup }) => {
 
     const handleForgotPassword = async () => {
         try {
-            const response = await fetch('http://localhost:4000/reset-password', {
+            const response = await fetch(`${baseURL}/reset-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: formData.email, newPassword: formData.newPassword }),
