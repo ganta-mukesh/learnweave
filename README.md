@@ -1,6 +1,6 @@
 # 🧠 LearnWeave – Collaborative AI-Powered Learning & Coding Platform
 
-![LearnWeave Logo](https://learnweave.onrender.com/static/media/LEARNWEAVE.d5e7e8b8867fd334dab6.png)
+![LearnWeave Logo](https://drive.google.com/file/d/1THbOAKVMwbr0exiBdPn66cx3p8XWcFeB/view?usp=sharing)
 
 > 🚀 Learn. Solve. Share. – Empowering learners through interactive coding challenges, AI-assisted problem-solving, and fun placement preparation tools.
 
